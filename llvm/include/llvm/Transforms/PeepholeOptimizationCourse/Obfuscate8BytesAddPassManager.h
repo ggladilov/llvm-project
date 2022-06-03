@@ -5,6 +5,10 @@
 
 namespace llvm {
 
+
+bool isAddWithI8(Instruction const* instruction);
+void doObfuscateI8Add(Instruction* instruction);
+
 class Obfuscate8BytesNewPassManager :
     public PassInfoMixin<Obfuscate8BytesNewPassManager> {
 public:
