@@ -29,7 +29,7 @@ struct ObfuscateI8Add : public FunctionPass {
             auto instruction = &*ii;
             ++ii;
 
-            if (!isAddWithI8(instruction)) {
+            if (!isAddI8(instruction)) {
                 continue;
             }
 				
@@ -42,8 +42,8 @@ struct ObfuscateI8Add : public FunctionPass {
     }
 
 private:
-    bool isAddWithI8(Instruction const* instruction) const {
-        return isBinaryAdd(instruction) && withI8(instruction);
+    bool isAddI8(Instruction const* instruction) const {
+        return isBinaryAdd(instruction) && isI8Instruction(instruction);
     }
 
     bool isBinaryAdd(Instruction const* instruction) const {
@@ -51,14 +51,10 @@ private:
                instruction->getNumOperands() == 2;
     }
 
-    bool withI8(Instruction const* instruction) const {
-		auto const& operands = instruction->operands();
-        return std::any_of(operands.begin(), operands.end(),
-                           [this](auto const& operand) { return isI8(operand); });
-    }
-	bool isI8(Value const* operand) const {
-        return (operand->getType()->isIntegerTy()) && (operand->getType()->getIntegerBitWidth() == 8);
-    }
+    bool isI8Instruction(Instruction const* instruction) const {
+		return instruction->getType()->isIntegerTy() && 
+		       instruction->getType()->getIntegerBitWidth() == 8;
+	}
 	
 	void doObfuscateI8Add(Instruction* instruction) const {
 		auto const& a = instruction->getOperand(0);
