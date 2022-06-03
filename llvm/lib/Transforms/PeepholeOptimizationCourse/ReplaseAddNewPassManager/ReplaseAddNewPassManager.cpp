@@ -1,17 +1,14 @@
 #include "llvm/Transforms/PeepholeOptimizationCourse/ReplaseAddNewPassManager.h"
-
+#include "llvm/Transforms/PeepholeOptimizationCourse/Functions.h"
 #include "llvm/Pass.h"
 
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InstIterator.h"
-#include "llvm/IR/Constants.h"
 #include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/IRBuilder.h"
 
 #include "llvm/Support/raw_ostream.h"
 
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
-#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 using namespace llvm;
 
@@ -37,20 +34,7 @@ PreservedAnalyses ReplaseAddNewPassManager::run(Function& function, FunctionAnal
 				
             }
 			
-			auto const& lhs = instruction->getOperand(0);
-			auto const& rhs = instruction->getOperand(1);
-			auto const& type = lhs->getType();
-			
-			IRBuilder<> builder(instruction);
-			
-			Instruction* new_instruction = BinaryOperator::CreateAdd( builder.CreateMul(builder.CreateAdd(
-                builder.CreateMul( ConstantInt::get(type, 39), builder.CreateAdd(
-                    builder.CreateAnd(lhs, rhs), builder.CreateMul(
-                        ConstantInt::get(type, 2), builder.CreateXor(lhs, rhs)))),
-                            ConstantInt::get(type, 23)), ConstantInt::get(type, 151)),
-								ConstantInt::get(type, 111));
-			
-			ReplaceInstWithInst(instruction, new_instruction);
+			ReplaseInstruction(instruction);
 			changed = true;
 		}
     return changed ? PreservedAnalyses::none()  : PreservedAnalyses::all();
