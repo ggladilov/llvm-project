@@ -1,11 +1,9 @@
+#include "llvm/Transforms/PeepholeOptimizationCourse/ObfuscateI8AddFunctions.h"
 #include "llvm/Pass.h"
 
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InstIterator.h"
-#include "llvm/IR/Constants.h"
 #include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "llvm/Support/raw_ostream.h"
 
@@ -40,38 +38,6 @@ struct ObfuscateI8Add : public FunctionPass {
 		}
         return changed;
     }
-
-private:
-    bool isAddI8(Instruction const* instruction) const {
-        return isBinaryAdd(instruction) && isI8Instruction(instruction);
-    }
-
-    bool isBinaryAdd(Instruction const* instruction) const {
-        return instruction->getOpcode() == Instruction::Add &&
-               instruction->getNumOperands() == 2;
-    }
-
-    bool isI8Instruction(Instruction const* instruction) const {
-		return instruction->getType()->isIntegerTy() && 
-		       instruction->getType()->getIntegerBitWidth() == 8;
-	}
-	
-	void doObfuscateI8Add(Instruction* instruction) const {
-		auto const& a = instruction->getOperand(0);
-        auto const& b = instruction->getOperand(1);
-		auto const& I8Type = a->getType();
-		
-		IRBuilder<> Builder(instruction);
-		auto mul4 =  Builder.CreateXor(a,b);
-		auto inc2 = Builder.CreateAnd(a, b);
-		auto inc3 = Builder.CreateMul(ConstantInt::get(I8Type, 2), mul4);
-		auto mul3 = Builder.CreateAdd(inc2, inc3);
-		auto mul2 = Builder.CreateMul(ConstantInt::get(I8Type, 39), mul3);
-		auto mul1 = Builder.CreateAdd(mul2, ConstantInt::get(I8Type, 23));
-		auto inc1 = Builder.CreateMul(mul1, ConstantInt::get(I8Type, 151));
-		Instruction *newInst = BinaryOperator::CreateAdd(inc1, ConstantInt::get(I8Type, 111));
-		ReplaceInstWithInst(instruction, newInst);
-	}
 };
 
 }  // namespace
