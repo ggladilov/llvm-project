@@ -248,6 +248,7 @@
 #include "llvm/Transforms/Vectorize/LoopVectorize.h"
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
+#include "llvm/Transforms/PeepholeOptimizationCourse/ObfuscateI8AddNewPassManager.h"
 
 using namespace llvm;
 
