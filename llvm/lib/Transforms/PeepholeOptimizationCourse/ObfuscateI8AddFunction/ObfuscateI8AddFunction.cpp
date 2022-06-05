@@ -1,6 +1,6 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Constants.h"
-#include "llvm/IR/Builder.h"
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUnils.h"
 
 #include "llvm/Transforms/PeepholeOptimizationCourse/ObufscateI8AddFunction.h"
