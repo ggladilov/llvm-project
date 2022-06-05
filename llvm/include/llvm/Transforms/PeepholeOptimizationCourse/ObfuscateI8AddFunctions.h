@@ -6,12 +6,12 @@
 
 namespace llvm {
 
-static bool isBinaryAdd(Instruction const* instruction){
+inline bool isBinaryAdd(Instruction const* instruction){
 	return instruction->getOpcode() == Instruction::Add &&
            instruction->getNumOperands() == 2;
 }
 
-static bool isI8Instruction(Instruction const* instruction){
+inline bool isI8Instruction(Instruction const* instruction){
 	return instruction->getType()->isIntegerTy() && 
 	   instruction->getType()->getIntegerBitWidth() == 8;
 }
