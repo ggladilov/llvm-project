@@ -381,15 +381,8 @@ FUNCTION_PASS("tlshoist", TLSVariableHoistPass())
 FUNCTION_PASS("transform-warning", WarnMissedTransformationsPass())
 FUNCTION_PASS("tsan", ThreadSanitizerPass())
 FUNCTION_PASS("memprof", MemProfilerPass())
-<<<<<<< HEAD
-<<<<<<< HEAD
 FUNCTION_PASS("replace-8int-add", ReplaceInt8SumNewPassManager())
-=======
 FUNCTION_PASS("remove-add-with-zero-new-pass-manager", RemoveAddWithZeroNewPassManager())
->>>>>>> dde0973a31fd157ecc1bde8714f4d4e0bc634ee7
-=======
-FUNCTION_PASS("remove-add-with-zero-new-pass-manager", RemoveAddWithZeroNewPassManager())
->>>>>>> dde0973a31fd157ecc1bde8714f4d4e0bc634ee7
 #undef FUNCTION_PASS
 
 #ifndef FUNCTION_PASS_WITH_PARAMS
