@@ -1,0 +1,2 @@
+add_subdirectory(AddObfuscate)
+add_subdirectory(AddObfuscateNewPassManager)
