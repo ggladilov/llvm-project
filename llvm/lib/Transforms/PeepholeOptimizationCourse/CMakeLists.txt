@@ -1,0 +1,3 @@
+add_subdirectory(ReplaseAdd)
+add_subdirectory(ReplaseAddNewPassManager)
+add_subdirectory(Functions)
