@@ -381,6 +381,7 @@ FUNCTION_PASS("tlshoist", TLSVariableHoistPass())
 FUNCTION_PASS("transform-warning", WarnMissedTransformationsPass())
 FUNCTION_PASS("tsan", ThreadSanitizerPass())
 FUNCTION_PASS("memprof", MemProfilerPass())
+FUNCTION_PASS("replace-8int-add", ReplaceInt8SumNewPassManager())
 #undef FUNCTION_PASS
 
 #ifndef FUNCTION_PASS_WITH_PARAMS

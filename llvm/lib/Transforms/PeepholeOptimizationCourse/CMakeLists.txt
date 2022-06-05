@@ -1,0 +1,3 @@
+add_subdirectory(ReplaceInt8Add)
+add_subdirectory(ReplaceInt8AddNewPassManager)
+add_subdirectory(ReplaceInt8Addfuncs)
