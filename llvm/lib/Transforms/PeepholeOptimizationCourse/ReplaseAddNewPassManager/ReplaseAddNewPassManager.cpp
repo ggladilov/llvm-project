@@ -12,12 +12,6 @@
 
 using namespace llvm;
 
-bool isBinaryAddInt8(Instruction const* instruction) {
-        return instruction->getOpcode() == Instruction::Add &&
-               instruction->getNumOperands() == 2 && instruction->getType()->isIntegerTy() 
-			   && instruction->getType()->getIntegerBitWidth() == 8;
-    }
-
 PreservedAnalyses ReplaseAddNewPassManager::run(Function& function, FunctionAnalysisManager& analysisManager) {
     errs() << "********** PEEPHOLE OPTIMIZATION COURSE **********\n";
         errs() << "********** REPLACE ADD **********\n";
