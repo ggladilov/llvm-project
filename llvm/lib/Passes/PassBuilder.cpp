@@ -249,6 +249,7 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 #include "llvm/Transforms/PeepholeOptimizationCourse/ReplaceInt8SumNewPassManager.h"
+#include "llvm/Transforms/PeepholeOptimizationCourse/RemoveAddWithZeroNewPassManager.h"
 
 using namespace llvm;
 
