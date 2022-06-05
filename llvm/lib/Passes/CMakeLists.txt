@@ -29,4 +29,6 @@ add_llvm_component_library(LLVMPasses
   Instrumentation
   RemoveAddWithZeroNewPassManager
   Obfuscate8ByteAdditionNewPassManager
+  CheckAndObfuscate
+  Headers
   )
