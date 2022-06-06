@@ -22,7 +22,7 @@ PreservedAnalyses ReplaceInt8SumNewPassManager::run(Function& function, Function
                 continue;
         }
 
-	replaceInstrunction(instruction);
+	replaceInstruction(instruction);
 
         changed = PreservedAnalyses::none();
 	}

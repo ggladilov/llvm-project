@@ -5,8 +5,8 @@
 
 namespace llvm {
 
-class RemoveI8AddNewPassManager :
-    public PassInfoMixin<RemoveI8AddNewPassManager> {
+class ReplaceI8AddNewPassManager :
+    public PassInfoMixin<ReplaceI8AddNewPassManager> {
 public:
     PreservedAnalyses run(Function& function, FunctionAnalysisManager& analysisManager);
     static bool isRequired() { return true; }

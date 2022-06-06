@@ -14,7 +14,7 @@
 
 namespace llvm {
 
- void replaceInst(Instruction* instruction) {
+ void replaceInstruction(Instruction* instruction) {
     auto const& lhs = instruction->getOperand(0);
     auto const& rhs = instruction->getOperand(1);
     auto const& type = instruction->getType();
