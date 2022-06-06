@@ -1,5 +1,5 @@
-#include "llvm/Transforms/PeepholeOptimizationCourse/ChangeAddNewPassManager.h"
 #include "llvm/Transforms/PeepholeOptimizationCourse/ChangeAddFuncs.h"
+#include "llvm/Transforms/PeepholeOptimizationCourse/ChangeAddNewPassManager.h"
 
 #include "llvm/Pass.h"
 
@@ -15,24 +15,26 @@ using namespace llvm;
 
 PreservedAnalyses ChangeAddNewPassManager::run(Function& F, FunctionAnalysisManager& analysisManager) {
     errs() << "********** PEEPHOLE OPTIMIZATION COURSE **********\n";
-    errs() << "********** CHANGE INT8 ADD NEW PASS MANAGER **********\n";
+    errs() << "********** REPLACE INT8 ADD NEW MANAGER **********\n";
     errs() << "********** Function: " << F.getName() << '\n';
 
-    PreservedAnalyses inst_changed = PreservedAnalyses::all();
+    PreservedAnalyses changed = PreservedAnalyses::all();
 
     for (BasicBlock& BB : F.getBasicBlockList()) {
         for (auto I = BB.begin(), IE = BB.end(); I != IE; ++I) {
-            auto* binOp = dyn_cast<BinaryOperator>(I);
+            auto* bin_op = dyn_cast<BinaryOperator>(I);
 
-                if (checkForInt8Op(binOp)) {
+                if (!bin_op ||
+                    bin_op->getOpcode() != Instruction::Add ||
+                    !(bin_op->getType()->isIntegerTy() && bin_op->getType()->getIntegerBitWidth() == 8)
+                ) {
                     continue;
                 }
 
-                Instruction* new_instruction = changeAddNewInstruction(binOp);
-                ReplaceInstWithInst(BB.getInstList(), I, new_instruction);
-                inst_changed = PreservedAnalyses::none();
+                ReplaceInstWithInst(BB.getInstList(), I, GetNewInstruction(bin_op));
+                changed = PreservedAnalyses::none();
         }
     }
 
-    return inst_changed;
+    return changed;
 }

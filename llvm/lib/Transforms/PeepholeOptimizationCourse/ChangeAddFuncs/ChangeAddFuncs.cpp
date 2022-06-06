@@ -9,43 +9,22 @@
 
 namespace llvm {
 
-bool checkForInt8Op(BinaryOperator* binOp) {
-
-    if (!binOp || binOp->getOpcode() != Instruction::Add) {
-        if (!(binOp->getType()->isIntegerTy() && binOp->getType()->getIntegerBitWidth() == 8)) {
-                return true;
-        }
-    }
-
-    return false;
-}
-
-Instruction* changeAddNewInstruction(BinaryOperator* binOp) {
+Instruction* GetNewInstruction(BinaryOperator* bin_op) {
                 
-    IRBuilder<> B(binOp);
-    auto const& lhs = binOp->getOperand(0);
-    auto const& rhs = binOp->getOperand(1);
-    auto const& i8 = binOp->getType();
+		auto const& lhs = bin_op->getOperand(0);
+		auto const& rhs = bin_op->getOperand(1);
+		auto const& type = lhs->getType();
 
-    Instruction* new_instruction = BinaryOperator::CreateAdd(
-        B.CreateMul(
-            B.CreateMul(
-                ConstantInt::get(i8, 39),
-                B.CreateAdd(
-                    B.CreateAnd(lhs, rhs),
-                    B.CreateAdd(
-                        B.CreateMul(
-                            ConstantInt::get(i8, 2),
-                            B.CreateXor(lhs, rhs)
-                        ),
-                        ConstantInt::get(i8, 23)
-                    )
-                )
-            ),
-            ConstantInt::get(i8, 151)
-        ),
-        ConstantInt::get(i8, 111)
-    );
+		IRBuilder<> builder(bin_op);
+
+		auto logAnd = builder.CreateAnd(lhs, rhs);
+		auto Xor =  builder.CreateXor(lhs, rhs);
+		auto mul2 = builder.CreateMul(ConstantInt::get(type, 2), Xor);
+		auto add = builder.CreateAdd(logAnd, mul2);
+		auto mul39 = builder.CreateMul(ConstantInt::get(type, 39), add);
+		auto add23 = builder.CreateAdd(mul39, ConstantInt::get(type, 23));
+		auto mul151 = builder.CreateMul(add23, ConstantInt::get(type, 151));
+		Instruction *new_instruction = BinaryOperator::CreateAdd(mul151, ConstantInt::get(type, 111));
 
     return new_instruction;
 }

@@ -22,26 +22,28 @@ struct ChangeAddPass : public FunctionPass {
 
     bool runOnFunction(Function& F) override {
         errs() << "********** PEEPHOLE OPTIMIZATION COURSE **********\n";
-        errs() << "********** CHANGE INT8 ADD **********\n";
+        errs() << "********** REPLACE INT8 ADD OLD MANAGER **********\n";
         errs() << "********** Function: " << F.getName() << '\n';
 
-        bool inst_changed = false;
+        bool changed = false;
 
         for (BasicBlock& BB : F.getBasicBlockList()) {
             for (auto I = BB.begin(), IE = BB.end(); I != IE; ++I) {
-                auto *binOp = dyn_cast<BinaryOperator>(I);
+                auto *bin_op = dyn_cast<BinaryOperator>(I);
 
-                if (checkForInt8Op(binOp)) {
+                if (!bin_op ||
+                    bin_op->getOpcode() != Instruction::Add ||
+                    !(bin_op->getType()->isIntegerTy() && bin_op->getType()->getIntegerBitWidth() == 8)
+                ) {
                     continue;
                 }
 
-                Instruction* new_instruction = changeAddNewInstruction(binOp);
-                ReplaceInstWithInst(BB.getInstList(), I, new_instruction);
-                inst_changed = true;
+                ReplaceInstWithInst(BB.getInstList(), I, GetNewInstruction(bin_op));
+                changed = true;
             }
         }
 
-        return inst_changed;
+        return changed;
     }
 };
 
@@ -50,7 +52,7 @@ struct ChangeAddPass : public FunctionPass {
 char ChangeAddPass::ID = 0;
 static RegisterPass<ChangeAddPass> X(
     "change-add",                                    /* Command line argument */
-    "Peephole Optimization Course Pass: Change Add Pass", /* Help string */
+    "Peephole Optimization Course Pass: Replace Int8 Add Pass", /* Help string */
     false                                                   /* Changes the CFG */,
     false                                                   /* This is not the Analysis Pass */
 );
