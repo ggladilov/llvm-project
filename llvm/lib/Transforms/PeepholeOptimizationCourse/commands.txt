@@ -19,33 +19,33 @@ cmake --build . -- -j1
 export LLVM_DIR=`pwd`
 
 $LLVM_DIR/bin/clang++ \
-    -c add_zero.cpp   \
+    -c test.cpp   \
     -O0               \
     -S                \
     -emit-llvm        \
-    -o /dev/stdout | sed 's/ optnone//g' > add_zero_wout_optnone.ll
+    -o /dev/stdout | sed 's/ optnone//g' > test_wout_optnone.ll
 
-$LLVM_DIR/bin/lli add_zero_wout_optnone.ll 1 2 3 4 ; echo $?
+$LLVM_DIR/bin/lli test_wout_optnone.ll 1 2 3 4 ; echo $?
 
 $LLVM_DIR/bin/opt                                \
     -enable-new-pm=0                             \
-    -load $LLVM_DIR/lib/LLVMRemoveAddWithZero.so \
-    -remove-add-with-zero                        \
-    -S < add_zero_wout_optnone.ll -o add_zero_wout_optnone_optimized.ll
+    -load $LLVM_DIR/lib/LLVMReplaceAddInt8.so \
+    -replace-add-int8                        \
+    -S < test_wout_optnone.ll -o test_wout_optnone_optimized.ll
 
-$LLVM_DIR/bin/lli add_zero_wout_optnone_optimized.ll 1 2 3 4 ; echo $?
+$LLVM_DIR/bin/lli test_wout_optnone_optimized.ll 1 2 3 4 ; echo $?
 
 $LLVM_DIR/bin/clang++ \
-    -c add_zero.cpp   \
-    -O0               \
+    -c test.cpp   \
+    -O1               \
     -S                \
     -emit-llvm        \
-    -o add_zero.ll
+    -o test.ll
 
-$LLVM_DIR/bin/lli add_zero.ll 1 2 3 4 ; echo $?
+$LLVM_DIR/bin/lli test.ll 1 2 3 4 ; echo $?
 
 $LLVM_DIR/bin/opt                                 \
-    -passes=remove-add-with-zero-new-pass-manager \
-    -S < add_zero.ll -o add_zero_optimized.ll
+    -passes=replace-add-int8-new-pass-manager \
+    -S < test.ll -o test_optimized.ll
 
-$LLVM_DIR/bin/lli add_zero_optimized.ll 1 2 3 4 ; echo $?
+$LLVM_DIR/bin/lli test_optimized.ll 1 2 3 4 ; echo $?

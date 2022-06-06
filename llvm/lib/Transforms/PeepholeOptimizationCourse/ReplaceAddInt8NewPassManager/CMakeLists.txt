@@ -1,0 +1,4 @@
+add_llvm_component_library(
+	LLVMReplaceAddInt8NewPassManager
+	ReplaceAddInt8NewPassManager.cpp
+)
