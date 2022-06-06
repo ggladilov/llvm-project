@@ -249,6 +249,7 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 #include "llvm/Transforms/PeepholeOptimizationCourse/RemoveAddWithZeroNewPassManager.h"
+#include "llvm/Transforms/PeepholeOptimizationCourse/Obfuscate8ByteAddNewPassManager.h"
 
 using namespace llvm;
 
@@ -375,6 +376,17 @@ bool shouldPopulateClassToPassNames() {
   return PrintPipelinePasses || !printBeforePasses().empty() ||
          !printAfterPasses().empty();
 }
+
+// A pass for testing -print-on-crash.
+// DO NOT USE THIS EXCEPT FOR TESTING!
+class TriggerCrashPass : public PassInfoMixin<TriggerCrashPass> {
+public:
+  PreservedAnalyses run(Module &, ModuleAnalysisManager &) {
+    abort();
+    return PreservedAnalyses::all();
+  }
+  static StringRef name() { return "TriggerCrashPass"; }
+};
 
 } // namespace
 
