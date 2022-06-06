@@ -57,10 +57,10 @@ struct Obfuscate8ByteAdd : public FunctionPass {
               const auto MulOperator3 =
                   builder.CreateMul(MulOperator2, IntConst151);
 
-              Instruction* replacement =
+              Instruction* AddOpIns =
                   BinaryOperator::CreateAdd(MulOperator3, IntConst111);
 
-              ReplaceInstWithInst(bb.getInstList(), i, replacement);
+              ReplaceInstWithInst(bb.getInstList(), i, AddOpIns);
               changed = true;
             }
           }
