@@ -20,7 +20,7 @@ export LLVM_DIR=`pwd`
 
 $LLVM_DIR/bin/clang++ \
     -c test.cpp   \
-    -O0               \
+    -O1               \
     -S                \
     -emit-llvm        \
     -o /dev/stdout | sed 's/ optnone//g' > test_wout_optnone.ll
