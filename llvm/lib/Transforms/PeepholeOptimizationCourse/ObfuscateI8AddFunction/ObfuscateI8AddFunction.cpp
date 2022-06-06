@@ -1,9 +1,9 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/IRBuilder.h"
-#include "llvm/Transforms/Utils/BasicBlockUnils.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
-#include "llvm/Transforms/PeepholeOptimizationCourse/ObufscateI8AddFunction.h"
+#include "llvm/Transforms/PeepholeOptimizationCourse/ObfuscateI8AddFunction.h"
 
 namespace llvm {
 
