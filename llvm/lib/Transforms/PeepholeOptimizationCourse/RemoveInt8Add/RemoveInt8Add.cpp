@@ -14,9 +14,9 @@ using namespace llvm;
 
 namespace {
 
-struct ReplaceInt8Sum : public FunctionPass {
+struct RemoveInt8Add : public FunctionPass {
     static char ID;
-    ReplaceInt8Sum() : FunctionPass(ID) {}
+    RemoveInt8Add() : FunctionPass(ID) {}
 
     bool runOnFunction(Function& function) override {
         errs() << "********** PEEPHOLE OPTIMIZATION COURSE **********\n";
@@ -42,8 +42,8 @@ struct ReplaceInt8Sum : public FunctionPass {
 
 }  // namespace
 
-char ReplaceInt8Sum::ID = 0;
-static RegisterPass<ReplaceInt8Sum> X(
+char RemoveInt8Add::ID = 0;
+static RegisterPass<RemoveInt8Add> X(
     "replace-8int-add",                                    /* Command line argument */
     "Peephole Optimization Course Pass: replace 8int add", /* Help string */
     false                                                      /* Changes the CFG */,
@@ -53,6 +53,6 @@ static RegisterPass<ReplaceInt8Sum> X(
 static RegisterStandardPasses Y(
     PassManagerBuilder::EP_EarlyAsPossible,
     [](const PassManagerBuilder &Builder, legacy::PassManagerBase &PM) {
-        PM.add(new ReplaceInt8Sum());
+        PM.add(new RemoveInt8Add());
     }
 );

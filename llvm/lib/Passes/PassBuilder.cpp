@@ -249,7 +249,7 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 #include "llvm/Transforms/PeepholeOptimizationCourse/RemoveAddWithZeroNewPassManager.h"
-
+#include "llvm/Transforms/PeepholeOptimizationCourse/RemoveInt8AddNewPassManager.h"
 using namespace llvm;
 
 static const Regex DefaultAliasRegex(

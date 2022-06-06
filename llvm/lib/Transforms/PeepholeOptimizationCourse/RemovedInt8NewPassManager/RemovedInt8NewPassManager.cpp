@@ -7,7 +7,7 @@
 
 using namespace llvm;
 
-PreservedAnalyses ReplaceInt8SumNewPassManager::run(Function& function, FunctionAnalysisManager& analysisManager) {
+PreservedAnalyses Remove8IntNewPM::run(Function& function, FunctionAnalysisManager& analysisManager) {
     errs() << "********** PEEPHOLE OPTIMIZATION COURSE **********\n";
     errs() << "********** OBFUSCATE INT8 ADD WITH NEW PASS MANAGER **********\n";
     errs() << "********** Function: " << function.getName() << '\n';
