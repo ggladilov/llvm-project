@@ -1,2 +1,4 @@
 add_subdirectory(RemoveAddWithZero)
 add_subdirectory(RemoveAddWithZeroNewPassManager)
+add_subdirectory(RemoveInt8Addfuncs)
+add_subdirectory(RemoveInt8Add)
