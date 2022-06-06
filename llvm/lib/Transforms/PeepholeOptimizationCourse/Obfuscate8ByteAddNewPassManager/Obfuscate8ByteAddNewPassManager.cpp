@@ -1,4 +1,5 @@
 #include "llvm/Transforms/PeepholeOptimizationCourse/Obfuscate8ByteAddNewPassManager.h"
+#include "llvm/Transforms/PeepholeOptimizationCourse/Obfuscate8ByteFunc.h"
 
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/IRBuilder.h"
@@ -27,33 +28,9 @@ PreservedAnalyses Obfuscate8ByteAddNewPassManager::run(
           const auto instruction_type = binaryOperator->getType();
           if (instruction_type->isIntegerTy() &&
               instruction_type->getIntegerBitWidth() == 8U) {
-            IRBuilder<> builder(binaryOperator);
-            auto const& first = binaryOperator->getOperand(0);
-            auto const& second = binaryOperator->getOperand(1);
-            auto const& i8Type = binaryOperator->getType();
-
-            const auto IntConst2 = ConstantInt::get(i8Type, 2);
-            const auto IntConst23 = ConstantInt::get(i8Type, 23);
-            const auto IntConst39 = ConstantInt::get(i8Type, 39);
-            const auto IntConst151 = ConstantInt::get(i8Type, 151);
-            const auto IntConst111 = ConstantInt::get(i8Type, 111);
-
-            const auto XorOperator = builder.CreateXor(first, second);
-            const auto MulOperator1 = builder.CreateMul(IntConst2, XorOperator);
-            const auto AddOperator1 =
-                builder.CreateAdd(MulOperator1, IntConst23);
-            const auto AndOperator = builder.CreateAnd(first, second);
-            const auto AddOperator2 =
-                builder.CreateAdd(AndOperator, AddOperator1);
-            const auto MulOperator2 =
-                builder.CreateMul(IntConst39, AddOperator2);
-            const auto MulOperator3 =
-                builder.CreateMul(MulOperator2, IntConst151);
-
-            Instruction* AddOpIns =
-                BinaryOperator::CreateAdd(MulOperator3, IntConst111);
-
+            Instruction* AddOpIns = OperFunc(binaryOperator);
             ReplaceInstWithInst(bb.getInstList(), i, AddOpIns);
+
             changed = PreservedAnalyses::none();
           }
         }
