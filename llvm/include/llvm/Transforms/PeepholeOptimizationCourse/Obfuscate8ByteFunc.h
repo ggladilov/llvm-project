@@ -19,13 +19,13 @@ inline Instruction* OperFunc(BinaryOperator* binaryOperator) {
   const auto IntConst151 = ConstantInt::get(i8Type, 151);
   const auto IntConst111 = ConstantInt::get(i8Type, 111);
 
-  const auto XorOperator = builder.CreateXor(first, second);
-  const auto MulOperator1 = builder.CreateMul(IntConst2, XorOperator);
-  const auto AddOperator1 = builder.CreateAdd(MulOperator1, IntConst23);
-  const auto AndOperator = builder.CreateAnd(first, second);
-  const auto AddOperator2 = builder.CreateAdd(AndOperator, AddOperator1);
-  const auto MulOperator2 = builder.CreateMul(IntConst39, AddOperator2);
-  const auto MulOperator3 = builder.CreateMul(MulOperator2, IntConst151);
+  const auto AndOperator = builder.CreateAnd(first, second);  //  (a & b)
+  const auto XorOperator = builder.CreateXor(first, second);  // (a ^ b)
+  const auto MulOperator1 = builder.CreateMul(IntConst2, XorOperator); // 2*(a ^ b)
+  const auto AddOperator1 = builder.CreateAdd(AndOperator, MulOperator1);  //  (a & b)+2*(a ^ b)
+  const auto MulOperator2 = builder.CreateMul(IntConst39, AddOperator1);  //  39*((a & b)+2*(a ^ b))
+  const auto AddOperator2 = builder.CreateAdd(MulOperator2, IntConst23);  //  39*((a & b)+2*(a ^ b))+23
+  const auto MulOperator3 = builder.CreateMul(AddOperator2, IntConst151);  //  (39*((a & b)+2*(a ^ b))+23)*151
 
   return BinaryOperator::CreateAdd(MulOperator3, IntConst111);
 }
