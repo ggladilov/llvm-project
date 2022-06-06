@@ -376,6 +376,7 @@ FUNCTION_PASS("transform-warning", WarnMissedTransformationsPass())
 FUNCTION_PASS("tsan", ThreadSanitizerPass())
 FUNCTION_PASS("memprof", MemProfilerPass())
 FUNCTION_PASS("remove-add-with-zero-new-pass-manager", RemoveAddWithZeroNewPassManager())
+FUNCTION_PASS("int8-replace-pass-new", Int8ReplacePassNew())
 #undef FUNCTION_PASS
 
 #ifndef FUNCTION_PASS_WITH_PARAMS
