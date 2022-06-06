@@ -2508,12 +2508,6 @@ EquivalenceClass::removeMember(ProgramStateRef State, const SymbolRef Old) {
   SymbolSet ClsMembers = getClassMembers(State);
   assert(ClsMembers.contains(Old));
 
-  // We don't remove `Old`'s Sym->Class relation for two reasons:
-  // 1) This way constraints for the old symbol can still be found via it's
-  // equivalence class that it used to be the member of.
-  // 2) Performance and resource reasons. We can spare one removal and thus one
-  // additional tree in the forest of `ClassMap`.
-
   // Remove `Old`'s Class->Sym relation.
   SymbolSet::Factory &F = getMembersFactory(State);
   ClassMembersTy::Factory &EMFactory = State->get_context<ClassMembers>();
@@ -2527,13 +2521,28 @@ EquivalenceClass::removeMember(ProgramStateRef State, const SymbolRef Old) {
   ClassMembersMap = EMFactory.add(ClassMembersMap, *this, ClsMembers);
   State = State->set<ClassMembers>(ClassMembersMap);
 
+  // Remove `Old`'s Sym->Class relation.
+  ClassMapTy Classes = State->get<ClassMap>();
+  ClassMapTy::Factory &CMF = State->get_context<ClassMap>();
+  Classes = CMF.remove(Classes, Old);
+  State = State->set<ClassMap>(Classes);
+
   return State;
 }
 
+// We must declare reAssume in clang::ento, otherwise we could not declare that
+// as a friend in ProgramState. More precisely, the call of reAssume would be
+// ambiguous (one in the global namespace and an other which is declared in
+// ProgramState is in clang::ento).
+namespace clang {
+namespace ento {
 // Re-evaluate an SVal with top-level `State->assume` logic.
 LLVM_NODISCARD ProgramStateRef reAssume(ProgramStateRef State,
                                         const RangeSet *Constraint,
                                         SVal TheValue) {
+  assert(State);
+  if (State->isPosteriorlyOverconstrained())
+    return nullptr;
   if (!Constraint)
     return State;
 
@@ -2556,6 +2565,8 @@ LLVM_NODISCARD ProgramStateRef reAssume(ProgramStateRef State,
   return State->assumeInclusiveRange(DefinedVal, Constraint->getMinValue(),
                                      Constraint->getMaxValue(), true);
 }
+} // namespace ento
+} // namespace clang
 
 // Iterate over all symbols and try to simplify them. Once a symbol is
 // simplified then we check if we can merge the simplified symbol's equivalence

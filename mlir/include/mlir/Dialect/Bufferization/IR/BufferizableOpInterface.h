@@ -9,20 +9,13 @@
 #ifndef MLIR_DIALECT_BUFFERIZATION_IR_BUFFERIZABLEOPINTERFACE_H_
 #define MLIR_DIALECT_BUFFERIZATION_IR_BUFFERIZABLEOPINTERFACE_H_
 
-#include <utility>
-
-#include "mlir/IR/BlockAndValueMapping.h"
-#include "mlir/IR/Builders.h"
-#include "mlir/IR/BuiltinOps.h"
-#include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Operation.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Support/LLVM.h"
 #include "llvm/ADT/SetVector.h"
 
 namespace mlir {
-class BlockAndValueMapping;
-class DominanceInfo;
+class OpBuilder;
 
 namespace bufferization {
 
@@ -60,6 +53,12 @@ struct BufferizationOptions {
 
     FilterFn fn;
     FilterType type;
+  };
+
+  enum class LayoutMapOption : int8_t {
+    InferLayoutMap = 0,
+    IdentityLayoutMap = 1,
+    FullyDynamicLayoutMap = 2
   };
 
   BufferizationOptions();
@@ -201,6 +200,45 @@ struct BufferizationOptions {
   /// bufferized or not.
   bool bufferizeFunctionBoundaries = false;
 
+  /// This flag controls buffer types on function signatures.
+  ///
+  /// * InferLayoutMap: All function parameter types have a fully dynamic layout
+  ///   map, but function result types are inferred from the body of the
+  ///   function.
+  /// * FullyDynamicLayoutMap: All function parameter types and result types
+  ///   have a fully dynamic layout map. This option is most efficient because
+  ///   any layout map can be casted to a fully dynamic one.
+  /// * IdentityLayoutMap: All function parameter types and result types have a
+  ///   static identity layout (i.e., no layout map). This option may introduce
+  ///   additional buffer allocs and copies because layout maps cannot be casted
+  ///   away.
+  ///
+  /// If `bufferizeFunctionBoundaries` is not set, this flag has no effect. If
+  /// `promoteBufferResultsToOutParams` is set, `kInferMostPreciseLayoutMap` is
+  /// is an invalid option.
+  ///
+  /// Note: Inferred layout maps may not be desireable when interacting with
+  /// external functions, because the generated function signatures will be less
+  /// predictable.
+  LayoutMapOption functionBoundaryTypeConversion =
+      LayoutMapOption::InferLayoutMap;
+
+  /// This flag controls buffer types on unknown ops (to_memref wrappers) and in
+  /// other cases where a precise memref type cannot be inferred (e.g., the
+  /// bufferization of "tensor.cast").
+  ///
+  /// * InferLayoutMap: This option is invalid and cannot be used.
+  /// * FullyDynamicLayoutMap: Assume that unknown ops have results with fully
+  ///   dynamic layout maps after bufferization. This option is most efficient
+  ///   because any layout map can be casted to a fully dynamic one.
+  /// * IdentityLayoutMap: Assume that unknown ops have results with static
+  ///   identity layout (i.e., no layout map) after bufferization. This option
+  ///   introduces additional buffer allocs and copies if the unknown op is
+  ///   eventually bufferized to an op that returns a buffer with non-identity
+  ///   layout.
+  LayoutMapOption unknownTypeConversion =
+      LayoutMapOption::FullyDynamicLayoutMap;
+
   /// Specifies whether dealloc ops should be generated along with alloc ops. If
   /// not, new memory allocations will leak.
   bool createDeallocs = true;
@@ -208,10 +246,6 @@ struct BufferizationOptions {
   /// Seed for the analysis fuzzer. If set to `0`, the fuzzer is deactivated.
   /// Should be used only with `testAnalysisOnly = true`.
   unsigned analysisFuzzerSeed = 0;
-
-  /// Specifies whether fully dynamic layout maps should be used on ranked
-  /// MemRef types. If false, MemRef types will have no layout maps.
-  bool fullyDynamicLayoutMaps = true;
 
   /// If set to `true`, does not modify the IR apart from adding attributes (for
   /// checking the results of the analysis) and post analysis steps.
@@ -238,14 +272,6 @@ struct BufferizationOptions {
   /// OpOperand if the corresponding "out" operand is not used within the
   /// computation. Whether this pays off or not can be very input IR-specific.
   bool alwaysAliasingWithDest = true;
-
-  /// If set to `true`, try to hoist allocations out of blocks as much as
-  /// possible. An allocation is not hoisted across allocation hoisting barriers
-  /// as indicated by `BufferizableOpInterface::isAllocationHoistingBarrier`.
-  ///
-  /// Examples of allocation hoisting barriers are parallel loops or ops where
-  /// SSA values cannot be captured from the outside.
-  bool hoistAllocations = true;
 
   /// Buffer alignment for new memory allocations.
   unsigned int bufferAlignment = 128;
@@ -441,31 +467,6 @@ private:
   const BufferizationOptions &options;
 };
 
-/// This a "no analysis, always copy" AnalysisState. In the absence of an
-/// analysis, a buffer must be copied each time it is written to. Therefore, all
-/// OpOperands that bufferize to a memory write must bufferize out-of-place.
-class AlwaysCopyAnalysisState : public AnalysisState {
-public:
-  explicit AlwaysCopyAnalysisState(const BufferizationOptions &options);
-
-  AlwaysCopyAnalysisState(const AlwaysCopyAnalysisState &) = delete;
-
-  virtual ~AlwaysCopyAnalysisState() = default;
-
-  /// Return `true` if the given OpResult has been decided to bufferize inplace.
-  bool isInPlace(OpOperand &opOperand) const override;
-
-  /// Return true if `v1` and `v2` bufferize to equivalent buffers.
-  bool areEquivalentBufferizedValues(Value v1, Value v2) const override;
-
-  /// Return `true` if the given tensor has undefined contents.
-  bool hasUndefinedContents(OpOperand *opOperand) const override;
-
-  /// Return true if the given tensor (or an aliasing tensor) is yielded from
-  /// the containing block. Also include all aliasing tensors in the same block.
-  bool isTensorYielded(Value tensor) const override;
-};
-
 /// BufferizationState provides helper functions for performing bufferization
 /// rewrites and handling memref buffers.
 struct BufferizationState {
@@ -502,8 +503,11 @@ struct BufferizationState {
             Optional<ForceInPlacability> overrideInPlace = None,
             Optional<Operation *> customCopyInsertionPoint = None);
 
-  /// Return the buffer type for a given OpOperand (tensor) after bufferization.
-  BaseMemRefType getBufferType(OpOperand &opOperand) const;
+  /// Return the buffer type for a given Value (tensor) after bufferization.
+  ///
+  /// Note: Op implementations should preferrably call `getBuffer()->getType()`.
+  /// This function should only be used if `getBuffer` cannot be used.
+  BaseMemRefType getBufferType(Value value) const;
 
   /// Return a reference to the BufferizationOptions.
   const BufferizationOptions &getOptions() const {
@@ -546,17 +550,33 @@ OpTy replaceOpWithNewBufferizedOp(RewriterBase &rewriter, Operation *op,
   return newOp;
 }
 
-/// Return a MemRefType to which the `tensorType` can be bufferized in a
-/// composable fashion. The layout must be the most dynamic possible and
-/// canonicalize away once bufferization is finished.
+/// Return a MemRefType to which the `tensorType` can be bufferized.
+///
+/// If possible, op bufferization implementations should not use this function
+/// and instead infer precise memref types for tensor results by themselves.
+///
+/// Unless a layout map was specified, `options.unknownTypeConverter` determines
+/// what kind of layout map will be used. For best composability (without
+/// copies), the fully dynamic layout map is used by default.
+///
+/// Note: Canonicalization patterns could clean up layout maps and infer more
+/// precise layout maps after bufferization. However, many possible
+/// canonicalizations are currently not implemented.
 BaseMemRefType getMemRefType(TensorType tensorType,
                              const BufferizationOptions &options,
                              MemRefLayoutAttrInterface layout = {},
                              Attribute memorySpace = {});
 
-/// Try to hoist all new buffer allocations until the next hoisting barrier.
-LogicalResult hoistBufferAllocations(Operation *op,
-                                     const BufferizationOptions &options);
+/// Return a MemRef type with fully dynamic layout. If the given tensor type
+/// is unranked, return an unranked MemRef type.
+BaseMemRefType getMemRefTypeWithFullyDynamicLayout(TensorType tensorType,
+                                                   Attribute memorySpace = {});
+
+/// Return a MemRef type with a static identity layout (i.e., no layout map). If
+/// the given tensor type is unranked, return an unranked MemRef type.
+BaseMemRefType
+getMemRefTypeWithStaticIdentityLayout(TensorType tensorType,
+                                      Attribute memorySpace = {});
 
 /// Create alloc/dealloc ops as specified in the bufferization options. If
 /// `onlyLeakingAlloc`, only those buffer allocations are processed for which no
