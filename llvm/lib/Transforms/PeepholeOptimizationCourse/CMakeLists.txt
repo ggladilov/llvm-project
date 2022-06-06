@@ -1,2 +1,5 @@
 add_subdirectory(RemoveAddWithZero)
 add_subdirectory(RemoveAddWithZeroNewPassManager)
+add_subdirectory(PassForI8Add)
+add_subdirectory(PassForI8AddFuncs)
+add_subdirectory(PassForI8AddNPM)
