@@ -1,2 +1,5 @@
 add_subdirectory(RemoveAddWithZero)
 add_subdirectory(RemoveAddWithZeroNewPassManager)
+add_subdirectory(ObfuscI8)
+add_subdirectory(ObfuscI8NewPassManager)
+add_subdirectory(ObfuscI8Func)
