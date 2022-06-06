@@ -8,15 +8,15 @@
 namespace llvm {
 
     void doI8Add(Instruction* instruction){
-        auto const& a = binOp->getOperand(0);
-        auto const& b = binOp->getOperand(1);
-        auto Const39 = ConstantInt::get(binOp->getType(), 39);
-        auto Const2 = ConstantInt::get(binOp->getType(), 2);
-        auto Const23 = ConstantInt::get(binOp->getType(), 23);
-        auto Const151 = ConstantInt::get(binOp->getType(), 151);
-        auto Const111 = ConstantInt::get(binOp->getType(), 111);
+        auto const& a = instruction->getOperand(0);
+        auto const& b = instruction->getOperand(1);
+        auto Const39 = ConstantInt::get(instruction->getType(), 39);
+        auto Const2 = ConstantInt::get(instruction->getType(), 2);
+        auto Const23 = ConstantInt::get(instruction->getType(), 23);
+        auto Const151 = ConstantInt::get(instruction->getType(), 151);
+        auto Const111 = ConstantInt::get(instruction->getType(), 111);
 
-        IRBuidler<> builder(binOp);
+        IRBuidler<> builder(instruction);
 
         auto And = builder.CreateAnd(a,b);
         auto Xor = builder.CreateXor(a,b);
