@@ -6,8 +6,8 @@
 
 namespace llvm {
 
-void replaceWithArgument(Instruction* instruction);
-bool is8intAdd(Instruction const* instruction);
+void replaceInst(Instruction* instruction);
+bool IsItI8Add(Instruction const* instruction);
 
 }
 
