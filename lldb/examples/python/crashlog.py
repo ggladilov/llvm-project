@@ -26,11 +26,9 @@
 #   PYTHONPATH=/path/to/LLDB.framework/Resources/Python ./crashlog.py ~/Library/Logs/DiagnosticReports/a.crash
 #----------------------------------------------------------------------
 
-import cmd
 import concurrent.futures
 import contextlib
 import datetime
-import glob
 import json
 import optparse
 import os
@@ -116,14 +114,12 @@ class CrashLog(symbolication.Symbolicator):
             for frame_idx, frame in enumerate(self.frames):
                 disassemble = (
                     this_thread_crashed or options.disassemble_all_threads) and frame_idx < options.disassemble_depth
-                if frame_idx == 0:
-                    symbolicated_frame_addresses = crash_log.symbolicate(
-                        frame.pc & crash_log.addr_mask, options.verbose)
-                else:
-                    # Any frame above frame zero and we have to subtract one to
-                    # get the previous line entry
-                    symbolicated_frame_addresses = crash_log.symbolicate(
-                        (frame.pc & crash_log.addr_mask) - 1, options.verbose)
+
+                # Except for the zeroth frame, we should subtract 1 from every
+                # frame pc to get the previous line entry.
+                pc = frame.pc & crash_log.addr_mask
+                pc = pc if frame_idx == 0 or pc == 0 else pc - 1
+                symbolicated_frame_addresses = crash_log.symbolicate(pc, options.verbose)
 
                 if symbolicated_frame_addresses:
                     symbolicated_frame_address_idx = 0
@@ -526,10 +522,10 @@ class JSONCrashLogParser:
             thread.frames.append(self.crashlog.Frame(idx, pc, frame_offset))
 
             # on arm64 systems, if it jump through a null function pointer,
-            # we end up at address 0 and the crash reporter unwinder 
-            # misses the frame that actually faulted.  
-            # But $lr can tell us where the last BL/BLR instruction used 
-            # was at, so insert that address as the caller stack frame.  
+            # we end up at address 0 and the crash reporter unwinder
+            # misses the frame that actually faulted.
+            # But $lr can tell us where the last BL/BLR instruction used
+            # was at, so insert that address as the caller stack frame.
             if idx == 0 and pc == 0 and "lr" in thread.registers:
                 pc = thread.registers["lr"]
                 for image in self.data['usedImages']:
@@ -927,10 +923,7 @@ class Symbolicate:
         pass
 
     def __call__(self, debugger, command, exe_ctx, result):
-        try:
-            SymbolicateCrashLogs(debugger, shlex.split(command))
-        except Exception as e:
-            result.PutCString("error: python exception: %s" % e)
+        SymbolicateCrashLogs(debugger, shlex.split(command))
 
     def get_short_help(self):
         return "Symbolicate one or more darwin crash log files."
@@ -1022,11 +1015,7 @@ def load_crashlog_in_scripted_process(debugger, crash_log_file, options):
     if not os.path.exists(crashlog_path):
         result.PutCString("error: crashlog file %s does not exist" % crashlog_path)
 
-    try:
-        crashlog = CrashLogParser().parse(debugger, crashlog_path, False)
-    except Exception as e:
-        result.PutCString("error: python exception: %s" % e)
-        return
+    crashlog = CrashLogParser().parse(debugger, crashlog_path, False)
 
     if debugger.GetNumTargets() > 0:
         target = debugger.GetTargetAtIndex(0)

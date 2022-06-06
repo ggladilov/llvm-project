@@ -4158,7 +4158,8 @@ void Driver::BuildActions(Compilation &C, DerivedArgList &Args,
     // Check if this Linker Job should emit a static library.
     if (ShouldEmitStaticLibrary(Args)) {
       LA = C.MakeAction<StaticLibJobAction>(LinkerInputs, types::TY_Image);
-    } else if (UseNewOffloadingDriver) {
+    } else if (UseNewOffloadingDriver ||
+               Args.hasArg(options::OPT_offload_link)) {
       LA = C.MakeAction<LinkerWrapperJobAction>(LinkerInputs, types::TY_Image);
       LA->propagateHostOffloadInfo(C.getActiveOffloadKinds(),
                                    /*BoundArch=*/nullptr);
@@ -4377,9 +4378,11 @@ Action *Driver::BuildOffloadingActions(Compilation &C,
       Mode && Mode->getOption().matches(options::OPT_offload_device_only);
 
   // Don't build offloading actions if explicitly disabled or we do not have a
-  // compile action to embed it in. If preprocessing only ignore embedding.
-  if (HostOnly || !(isa<CompileJobAction>(HostAction) ||
-                    getFinalPhase(Args) == phases::Preprocess))
+  // valid source input and compile action to embed it in. If preprocessing only
+  // ignore embedding.
+  if (HostOnly || !types::isSrcFile(Input.first) ||
+      !(isa<CompileJobAction>(HostAction) ||
+        getFinalPhase(Args) == phases::Preprocess))
     return HostAction;
 
   ActionList OffloadActions;
