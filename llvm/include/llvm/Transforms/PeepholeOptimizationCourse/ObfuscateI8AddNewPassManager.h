@@ -7,9 +7,8 @@ namespace llvm {
 
     class ObfuscateI8AddNewPassManager :
         public PassInfoMixin<ObfuscateI8AddNewPassManager>{
-            public:
-            PresevedAnalyses run(Function &foo, FunctionAnalysisManager& analysisManager);
-            static bool isRequired() {return true;}
+public:
+    PreservedAnalyses run(Function& function, FunctionAnalysisManager& analysisManager);
         };
 }
 

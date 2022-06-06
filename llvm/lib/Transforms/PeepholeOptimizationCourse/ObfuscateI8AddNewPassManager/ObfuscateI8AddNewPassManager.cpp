@@ -6,16 +6,17 @@
 #include "llvm/IR/LegacyPassManager.h"
 
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/IR/InstIterator.h"
 
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 
 #include "llvm/Transforms/PeepholeOptimizationCourse/ObfuscateI8AddNewPassManager.h"
-#include "llvm/Transforms/PeppholeOptimizationCourse/ObfuscateI8AddFunction.h"
+#include "llvm/Transforms/PeepholeOptimizationCourse/ObfuscateI8AddFunction.h"
 
 using namespace llvm;
 
-PreservedAnalyses ObfuscateI8AddNewPassManager::run(Function& F, FunctionAnalysisManager& analysisManager) {
+PreservedAnalyses ObfuscateI8AddNewPassManager::run(Function& function, FunctionAnalysisManager& analysisManager) {
 
     errs() << "********** PEEPHOLE OPTIMIZATION COURSE **********\n";
     errs() << "********** Obfuscate I8 Add **********\n";
@@ -23,26 +24,19 @@ PreservedAnalyses ObfuscateI8AddNewPassManager::run(Function& F, FunctionAnalysi
 
     PreservedAnalyses changed = PreservedAnalyses::all();
 
-       for (auto basicBlock = function.begin(), basicBlockEnd = function.end(); basicBlock != basicBlockEnd; ++basicBlock) {
-            for (auto instruction = basicBlock->begin(), ie = basicBlock->end(); instruction != ie; ++instruction) {
-                auto binOp = dyn_cast<BinaryOperator>(instruction);
-                if (!binOp) {
-                    continue;
-                }
-                if (binOp->getOpcode() != Instruction::Add) {
-                    continue;
-                }
+       for (auto ii = inst_begin(function), ie = inst_end(function); ii != ie;) { 
+        auto instruction = &*ii;
+        ++ii;
 
-                if (!binOp->getType()->isIntegerTy() || binOp->getType()->getIntegerBitWidth() != 8) {
-                    continue;
-                }
-
-
+        if (!isAddI8(instruction)) {
+                continue;
+        }
+            
             doI8Add(instruction);
 
 
             changed = PreservedAnalyses::none();
             }
-       }
+       
        return changed;
 }

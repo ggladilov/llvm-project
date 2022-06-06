@@ -16,19 +16,23 @@ namespace llvm {
         auto Const151 = ConstantInt::get(instruction->getType(), 151);
         auto Const111 = ConstantInt::get(instruction->getType(), 111);
 
-        IRBuidler<> builder(instruction);
+        IRBuilder<> builder(instruction);
 
         auto And = builder.CreateAnd(a,b);
         auto Xor = builder.CreateXor(a,b);
         auto MulW2 = builder.CreateMul(Xor,Const2);
         auto Add = builder.CreateAdd(And,MulW2);
         auto MulW39 = builder.CreateMul(Add,Const39);
-        auto AddW23 = builder.CreateAdd(MulW39,Const23)
-        auto MulW151 = builder.CreateMul(Sum,Const151);
+        auto AddW23 = builder.CreateAdd(MulW39,Const23);
+        auto MulW151 = builder.CreateMul(AddW23,Const151);
 
-        auto obfuscated = BinaryOperator::CreateAdd(MulW151,Const111);
-        ReplaceInstWithInst(basicBlock->getInstList(), instruction, obfuscated);
+        Instruction *obfuscated = BinaryOperator::CreateAdd(MulW151,Const111);
+        ReplaceInstWithInst(instruction, obfuscated);
         
     }
+
+    bool isAddI8(Instruction const* instruction) {  
+    return isBinaryAdd(instruction) && isI8Instruction(instruction);
+}
 
 }
