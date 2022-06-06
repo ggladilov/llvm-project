@@ -28,4 +28,6 @@ add_llvm_component_library(LLVMPasses
   Vectorize
   Instrumentation
   RemoveAddWithZeroNewPassManager
+  ReplaceInt8AddNewPassManager
+  Functions
   )
