@@ -10,11 +10,11 @@
 namespace llvm {
 
 Instruction* SwapInt8Instruction(BinaryOperator* binOp) {
-    IRBuilder<> B(binary_op);
+    IRBuilder<> B(binOp);
 
-    auto const& lhs = binary_op->getOperand(0);
-    auto const& rhs = binary_op->getOperand(1);
-    auto const& i8 = binary_op->getType();
+    auto const& lhs = binOp->getOperand(0);
+    auto const& rhs = binOp->getOperand(1);
+    auto const& i8 = binOp->getType();
 
     const auto AndOp1 = B.CreateAnd(lhs, rhs);
     const auto XorOp1 = B.CreateXor(lhs, rhs);
