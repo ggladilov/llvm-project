@@ -40,16 +40,7 @@ Pass has to be written using both legacy and new pass managers.
 
 ### Acceptance Format
 
-The solution must be submitted in a form of a pull request to this repository.
-
-It is important to:
-
-* Mention [me](https://github.com/ggladilov) in a comment of the pull request to notify about it. You will **not** be able to request me as an reviewer.
-* Use [peephole-optimization-course](https://github.com/ggladilov/llvm-project/tree/peephole-optimization-course) (**not** [main](https://github.com/ggladilov/llvm-project/tree/main)) as a target branch, otherwise the pull request will contain my commits which is prohibited.
-* Attach assembly files with outputs (those that are with .ll extension) to pull request.
-* Attach command lines used to get assembly files from point above.
-
-If I approved the pull request it means the solution is accepted.
+The solution must be submitted in a form of pull request to this repository with [me](https://github.com/ggladilov) as a reviewer. If I approved the pr it means the solution is accepted.
 
 ### Functions & classes to use
 
@@ -75,7 +66,7 @@ If I approved the pull request it means the solution is accepted.
 ### Notes
 
 * In C/C++ there are rules which allow compiler to **promote** integral types before operation is performed: [integral promotion](https://en.cppreference.com/w/cpp/language/implicit_conversion#Integral_promotion) (this is the case for `uint8_t` additions). It means that if you compile your program with byte additions without optimizations (using `-O0` option) you may see resulting IR with `int` additions instead of original ones. Such an IR would not be the subject for a pass which obfuscates only byte additions. To resolve that issue use `-O1` optimization level instead of `-O0`. As a result you would have an IR with original byte additions.
-* Do not forget to check an IR after modification is still valid.
+* Do not forget to check an IR after modification is still valid
 * You can reset/add new remote instead of cloning new repository if you already have llvm's clone on your machine (check [Commands from session](https://github.com/ggladilov/llvm-project/blob/peephole-optimization-course/llvm/lib/Transforms/PeepholeOptimizationCourse/commands.txt)).
 
 ### Deadline
