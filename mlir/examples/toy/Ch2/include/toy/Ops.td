@@ -221,6 +221,18 @@ def MulOp : Toy_Op<"mul"> {
   ];
 }
 
+def TestOp : Toy_Op<"test_op", [SameVariadicOperandSize]> {
+  let arguments = (ins
+    Optional<I32>:$optionalOperand0,
+    I32:$requiredOperand1,
+    Optional<I32>:$optionalOperand2,
+    I32:$requiredOperand3,
+    OptionalAttr<I32Attr>:$optionalAttribute4,
+    I32Attr:$requiredAttribute5
+  );
+  let results = (outs I32);
+}
+
 //===----------------------------------------------------------------------===//
 // PrintOp
 //===----------------------------------------------------------------------===//

@@ -17,10 +17,13 @@ add_toy_chapter(toyc-ch2
   )
 include_directories(include/)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include/)
+get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 target_link_libraries(toyc-ch2
   PRIVATE
     MLIRAnalysis
     MLIRIR
     MLIRParser
     MLIRSideEffectInterfaces
-    MLIRTransforms)
+    MLIRTransforms
+    ${dialect_libs}
+)

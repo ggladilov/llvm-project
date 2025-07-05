@@ -17,6 +17,7 @@
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/FunctionImplementation.h"
 #include "mlir/IR/OpImplementation.h"
+#include "mlir/Support/LogicalResult.h"
 
 using namespace mlir;
 using namespace mlir::toy;
@@ -241,6 +242,13 @@ mlir::ParseResult MulOp::parse(mlir::OpAsmParser &parser,
 
 void MulOp::print(mlir::OpAsmPrinter &p) { printBinaryOp(p, *this); }
 
+// mlir::ParseResult TestBuilderOp::parse(mlir::OpAsmParser &,
+//                                        mlir::OperationState &) {
+//   return mlir::ParseResult::success(true);
+// }
+
+// void TestBuilderOp::print(mlir::OpAsmPrinter &) {}
+
 //===----------------------------------------------------------------------===//
 // ReturnOp
 //===----------------------------------------------------------------------===//
@@ -309,3 +317,11 @@ mlir::LogicalResult TransposeOp::verify() {
 
 #define GET_OP_CLASSES
 #include "toy/Ops.cpp.inc"
+
+::mlir::toy::TestOp
+TestOpBuilderHelper<0>::build(::mlir::OpBuilder &odsBuilder) {
+  auto op = odsBuilder.create(state);
+  auto result = dyn_cast<::mlir::toy::TestOp>(op);
+  assert(result && "builder didn't return the right type");
+  return result;
+}

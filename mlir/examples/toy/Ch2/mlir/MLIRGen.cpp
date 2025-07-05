@@ -12,6 +12,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "toy/MLIRGen.h"
+#include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "toy/AST.h"
 #include "toy/Dialect.h"
 
@@ -193,8 +195,34 @@ private:
     switch (binop.getOp()) {
     case '+':
       return builder.create<AddOp>(location, lhs, rhs);
-    case '*':
+    case '*': {
+      auto context = builder.getContext();
+      auto resultType = ::mlir::IntegerType::get(builder.getContext(), 32);
+      context->getOrLoadDialect<mlir::arith::ArithDialect>();
+      auto someValue1 =
+          builder.create<::mlir::arith::ConstantIntOp>(location, 1, 32);
+      auto someValue2 =
+          builder.create<::mlir::arith::ConstantIntOp>(location, 2, 32);
+      auto someAttribute = mlir::IntegerAttr::get(resultType, 10);
+      //   auto testOp =
+      //       builder.create<TestOp>(location, resultType, someValue1,
+      //       someValue2);
+
+      //   emitError(location, "required = ") << testOp.getRequiredOperand0();
+      //   //   emitError(location, "required = ") <<
+      //   testOp.getRequiredOperand1(); emitError(location, "optional = ") <<
+      //   testOp.getOptionalOperand1();
+
+      TestOpBuilder{location}
+          .setResultType(resultType)
+          .setRequiredOperand3(someValue2)
+          .setRequiredOperand1(someValue1)
+          .setRequiredAttribute5(someAttribute)
+          .build(builder);
+
+      //   return testOp;
       return builder.create<MulOp>(location, lhs, rhs);
+    }
     }
 
     emitError(location, "invalid binary operator '") << binop.getOp() << "'";
